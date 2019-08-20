@@ -13,6 +13,8 @@ namespace HslCommunicationDemo
 {
     public partial class FormLoad : Form
     {
+        public static Color ThemeColor = Color.AliceBlue;
+
         public FormLoad( )
         {
             InitializeComponent( );
@@ -280,6 +282,7 @@ namespace HslCommunicationDemo
 
         private void FormLoad_Load( object sender, EventArgs e )
         {
+            ThemeColor = menuStrip1.BackColor;
             verisonToolStripMenuItem.Text = "Version: " + HslCommunication.BasicFramework.SoftBasic.FrameworkVersion.ToString( );
 
             if (Settings1.Default.language == 1)
@@ -302,6 +305,16 @@ namespace HslCommunicationDemo
                 HslCommunication.StringResources.SeteLanguageEnglish( );
                 Language( Program.Language );
             }
+
+            support赞助ToolStripMenuItem.Click += Support赞助ToolStripMenuItem_Click;
+        }
+
+        private void Support赞助ToolStripMenuItem_Click( object sender, EventArgs e )
+        {
+            using (HslCommunication.BasicFramework.FormSupport form = new HslCommunication.BasicFramework.FormSupport( ))
+            {
+                form.ShowDialog( );
+            }
         }
 
         private void Language( int language )
@@ -320,6 +333,8 @@ namespace HslCommunicationDemo
                 button16.Text = "常用简单控件";
                 Text = "HslCommunication 测试工具";
                 免责条款ToolStripMenuItem.Text = "免责条款";
+                论坛toolStripMenuItem.Text = "论坛";
+                授权ToolStripMenuItem.Text = "授权";
             }
             else
             {
@@ -334,7 +349,9 @@ namespace HslCommunicationDemo
                 button29.Text = "Alien Simplify Net";
                 button16.Text = "Simple Control";
                 Text = "HslCommunication Test Tool";
+                论坛toolStripMenuItem.Text = "BBS";
                 免责条款ToolStripMenuItem.Text = "Disclaimer";
+                授权ToolStripMenuItem.Text = "Authorize";
             }
         }
 
@@ -354,6 +371,18 @@ namespace HslCommunicationDemo
             Program.Language = 1;
             Language( Program.Language );
             MessageBox.Show( "已选择中文" );
+        }
+
+        private void 论坛toolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                System.Diagnostics.Process.Start("http://bbs.hslcommunication.cn/");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
         }
 
         private void button20_Click( object sender, EventArgs e )
@@ -847,6 +876,150 @@ namespace HslCommunicationDemo
             Hide( );
             System.Threading.Thread.Sleep( 200 );
             using (FormKuka form = new FormKuka( ))
+            {
+                form.ShowDialog( );
+            }
+            System.Threading.Thread.Sleep( 200 );
+            Show( );
+        }
+
+        private void button52_Click( object sender, EventArgs e )
+        {
+            Hide( );
+            System.Threading.Thread.Sleep( 200 );
+            using (FormOmronUdp form = new FormOmronUdp( ))
+            {
+                form.ShowDialog( );
+            }
+            System.Threading.Thread.Sleep( 200 );
+            Show( );
+        }
+
+        private void Button53_Click( object sender, EventArgs e )
+        {
+            Hide( );
+            System.Threading.Thread.Sleep( 200 );
+            using (FormSiemens form = new FormSiemens( SiemensPLCS.S200 ))
+            {
+                form.ShowDialog( );
+            }
+            System.Threading.Thread.Sleep( 200 );
+            Show( );
+        }
+
+        private void button54_Click(object sender, EventArgs e)
+        {
+            Hide();
+            System.Threading.Thread.Sleep(200);
+            using (FormKeyenceNanoSerial form = new FormKeyenceNanoSerial())
+            {
+                form.ShowDialog();
+            }
+            System.Threading.Thread.Sleep(200);
+            Show();
+        }
+
+        private void Button55_Click( object sender, EventArgs e )
+        {
+            Hide( );
+            System.Threading.Thread.Sleep( 200 );
+            using (FormLsisFEnet form = new FormLsisFEnet( ))
+            {
+                form.ShowDialog( );
+            }
+            System.Threading.Thread.Sleep( 200 );
+            Show( );
+        }
+
+        private void Button56_Click( object sender, EventArgs e )
+        {
+            Hide( );
+            System.Threading.Thread.Sleep( 200 );
+            using (FormMcServer form = new FormMcServer( ))
+            {
+                form.ShowDialog( );
+            }
+            System.Threading.Thread.Sleep( 200 );
+            Show( );
+        }
+
+        private void Button57_Click( object sender, EventArgs e )
+        {
+            Hide( );
+            System.Threading.Thread.Sleep( 200 );
+            using (FormLsisCnet form = new FormLsisCnet( ))
+            {
+                form.ShowDialog( );
+            }
+            System.Threading.Thread.Sleep( 200 );
+            Show( );
+        }
+
+        private void Button58_Click( object sender, EventArgs e )
+        {
+            Hide( );
+            System.Threading.Thread.Sleep( 200 );
+            using (FormPanasonicBinary form = new FormPanasonicBinary( ))
+            {
+                form.ShowDialog( );
+            }
+            System.Threading.Thread.Sleep( 200 );
+            Show( );
+        }
+
+        private void Button59_Click(object sender, EventArgs e)
+        {
+            Hide();
+            System.Threading.Thread.Sleep(200);
+            using (FormLSisServer form = new FormLSisServer())
+            {
+                form.ShowDialog();
+            }
+            System.Threading.Thread.Sleep(200);
+            Show();
+        }
+
+        private void Button61_Click( object sender, EventArgs e )
+        {
+            Hide( );
+            System.Threading.Thread.Sleep( 200 );
+            using (FormOmronCip form = new FormOmronCip( ))
+            {
+                form.ShowDialog( );
+            }
+            System.Threading.Thread.Sleep( 200 );
+            Show( );
+        }
+
+        private void Button63_Click( object sender, EventArgs e )
+        {
+            Hide( );
+            System.Threading.Thread.Sleep( 200 );
+            using (FormFatekPrograme form = new FormFatekPrograme( ))
+            {
+                form.ShowDialog( );
+            }
+            System.Threading.Thread.Sleep( 200 );
+            Show( );
+        }
+
+        private void Button62_Click( object sender, EventArgs e )
+        {
+            Hide( );
+            System.Threading.Thread.Sleep( 200 );
+            using (FormFujiSPB form = new FormFujiSPB( ))
+            {
+                form.ShowDialog( );
+            }
+            System.Threading.Thread.Sleep( 200 );
+            Show( );
+        }
+
+        private void Button64_Click( object sender, EventArgs e )
+        {
+            Hide( );
+            System.Threading.Thread.Sleep( 200 );
+            using (FormOpenProtocol form = new FormOpenProtocol( ))
             {
                 form.ShowDialog( );
             }

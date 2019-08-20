@@ -20,23 +20,58 @@ namespace HslCommunicationDemo
             InitializeComponent( );
         }
 
-
-
-        private void linkLabel1_LinkClicked( object sender, LinkLabelLinkClickedEventArgs e )
-        {
-            try
-            {
-                System.Diagnostics.Process.Start( linkLabel1.Text );
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show( ex.Message );
-            }
-        }
-
         private void FormSiemens_Load( object sender, EventArgs e )
         {
             panel2.Enabled = false;
+
+
+            if(Program.Language == 2)
+            {
+                Text = "S7 Virtual Server [data support i,q,m,db block read and write, db block only one, whether it is DB1.1 or DB100.1 refers to the same]";
+                label3.Text = "port:";
+                button1.Text = "Start Server";
+                button11.Text = "Close Server";
+                label11.Text = "This server is not a strict S7 protocol and only supports perfect communication with HSL components.";
+                label19.Text = "Note: The string of values needs to be converted to the corresponding data type";
+                button4.Text = "Connecting Alien client";
+                groupBox1.Text = "Single Data Read test";
+                label6.Text = "Adderss:";
+                label7.Text = "Result";
+                button_read_bool.Text = "Read Bit";
+                button6.Text = "r-byte";
+                button_read_short.Text = "r-short";
+                button_read_ushort.Text = "r-ushort";
+                button_read_int.Text = "r-int";
+                button_read_uint.Text = "r-uint";
+                button_read_long.Text = "r-long";
+                button_read_ulong.Text = "r-ulong";
+                button_read_float.Text = "r-float";
+                button_read_double.Text = "r-double";
+                button_read_string.Text = "r-string";
+                label8.Text = "length";
+
+                label10.Text = "Address:";
+                label9.Text = "Value";
+                groupBox2.Text = "Single Data Write test";
+                button24.Text = "w-Bit";
+                button7.Text = "w-byte";
+                button22.Text = "w-short";
+                button21.Text = "w-ushort";
+                button20.Text = "w-int";
+                button19.Text = "w-uint";
+                button18.Text = "w-long";
+                button17.Text = "w-ulong";
+                button16.Text = "w-float";
+                button15.Text = "w-double";
+                button14.Text = "w-string";
+
+                button8.Text = "Load";
+                button9.Text = "Save";
+                button10.Text = "Timed writing";
+                label1.Text = "log:";
+                checkBox1.Text = "Display received data";
+                label16.Text = "Client-Online:";
+            }
         }
         
         
@@ -74,7 +109,7 @@ namespace HslCommunicationDemo
         /// <param name="address"></param>
         private void writeResultRender( string address )
         {
-            MessageBox.Show( DateTime.Now.ToString( "[HH:mm:ss] " ) + $"[{address}] 写入成功" );
+            MessageBox.Show( DateTime.Now.ToString( "[HH:mm:ss] " ) + $"[{address}] Write Success" );
         }
 
 
@@ -87,7 +122,7 @@ namespace HslCommunicationDemo
         {
             if (!int.TryParse( textBox2.Text, out int port ))
             {
-                MessageBox.Show( "端口输入不正确！" );
+                MessageBox.Show( DemoUtils.PortInputWrong );
                 return;
             }
 
@@ -96,8 +131,8 @@ namespace HslCommunicationDemo
             {
 
                 s7NetServer = new HslCommunication.Profinet.Siemens.SiemensS7Server( );                       // 实例化对象
-                s7NetServer.LogNet = new HslCommunication.LogNet.LogNetSingle( "logs.txt" );        // 配置日志信息
-                s7NetServer.LogNet.BeforeSaveToFile += LogNet_BeforeSaveToFile;
+                //s7NetServer.LogNet = new HslCommunication.LogNet.LogNetSingle( "logs.txt" );                  // 配置日志信息
+                //s7NetServer.LogNet.BeforeSaveToFile += LogNet_BeforeSaveToFile;
                 s7NetServer.OnDataReceived += BusTcpServer_OnDataReceived;
                 
                 s7NetServer.ServerStart( port );
@@ -143,7 +178,7 @@ namespace HslCommunicationDemo
                 return;
             }
 
-            textBox1.AppendText( "接收数据：" + HslCommunication.BasicFramework.SoftBasic.ByteToHexString( receive, ' ' ) + Environment.NewLine );
+            textBox1.AppendText( "Received：" + HslCommunication.BasicFramework.SoftBasic.ByteToHexString( receive, ' ' ) + Environment.NewLine );
         }
 
         /// <summary>
@@ -413,29 +448,6 @@ namespace HslCommunicationDemo
             form.ShowDialog( );
         }
 
-
-        private void Test1( )
-        {
-            short Short100      = s7NetServer.ReadInt16( "100" ).Content;               // 读取寄存器值
-            ushort UShort100    = s7NetServer.ReadUInt16( "100" ).Content;              // 读取寄存器ushort值
-            int Int100          = s7NetServer.ReadInt32( "100" ).Content;               // 读取寄存器int值
-            uint UInt100        = s7NetServer.ReadUInt32( "100" ).Content;              // 读取寄存器uint值
-            float Float100      = s7NetServer.ReadFloat( "100" ).Content;               // 读取寄存器Float值
-            long Long100        = s7NetServer.ReadInt64( "100" ).Content;               // 读取寄存器long值
-            ulong ULong100      = s7NetServer.ReadUInt64( "100" ).Content;              // 读取寄存器ulong值
-            double Double100    = s7NetServer.ReadDouble( "100" ).Content;              // 读取寄存器double值
-
-
-            s7NetServer.Write( "100", (short)5 );                          // 写入short值
-            s7NetServer.Write( "100", (ushort)45678 );                     // 写入ushort值
-            s7NetServer.Write( "100", 12345667 );                          // 写入int值
-            s7NetServer.Write( "100", (uint)12312312 );                    // 写入uint值
-            s7NetServer.Write( "100", 123.456f );                          // 写入float值
-            s7NetServer.Write( "100", 1231231231233L );                    // 写入long值
-            s7NetServer.Write( "100", 1212312313UL );                      // 写入ulong值
-            s7NetServer.Write( "100", 123.456d );                          // 写入double值
-        }
-
         private void button4_Click( object sender, EventArgs e )
         {
             // 连接异形客户端
@@ -446,11 +458,11 @@ namespace HslCommunicationDemo
                     OperateResult connect = s7NetServer.ConnectHslAlientClient( form.IpAddress, form.Port, form.DTU );
                     if (connect.IsSuccess)
                     {
-                        MessageBox.Show( "连接成功！" );
+                        MessageBox.Show( HslCommunication.StringResources.Language.ConnectedSuccess );
                     }
                     else
                     {
-                        MessageBox.Show( "连接失败！原因：" + connect.Message );
+                        MessageBox.Show( HslCommunication.StringResources.Language.ConnectedFailed + connect.Message );
                     }
                 }
             }
@@ -463,7 +475,7 @@ namespace HslCommunicationDemo
             if (s7NetServer != null)
             {
                 s7NetServer.SaveDataPool( "123.txt" );
-                MessageBox.Show( "存储完成" );
+                MessageBox.Show( "Save file finish" );
             }
         }
 
@@ -475,11 +487,11 @@ namespace HslCommunicationDemo
                 if (System.IO.File.Exists( "123.txt" ))
                 {
                     s7NetServer.LoadDataPool( "123.txt" );
-                    MessageBox.Show( "加载完成" );
+                    MessageBox.Show( "Load data finish" );
                 }
                 else
                 {
-                    MessageBox.Show( "文件不存在！" );
+                    MessageBox.Show( "File is not exist！" );
                 }
             }
         }
@@ -487,7 +499,7 @@ namespace HslCommunicationDemo
 
 
         private string timerAddress = string.Empty;
-        private ushort timerValue = 0;
+        private long timerValue = 0;
         private System.Windows.Forms.Timer timerWrite = null;
         private void button10_Click( object sender, EventArgs e )
         {
@@ -502,7 +514,8 @@ namespace HslCommunicationDemo
 
         private void TimerWrite_Tick( object sender, EventArgs e )
         {
-            s7NetServer.Write( timerAddress, timerValue );
+            ushort value = (ushort)(Math.Sin( 2 * Math.PI * timerValue / 100 ) * 100 + 100);
+            s7NetServer.Write( timerAddress, value );
             timerValue++;
         }
 

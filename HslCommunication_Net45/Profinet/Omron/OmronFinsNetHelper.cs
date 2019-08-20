@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using HslCommunication.BasicFramework;
 
 namespace HslCommunication.Profinet.Omron
 {
@@ -60,34 +61,82 @@ namespace HslCommunication.Profinet.Omron
                             result.Content1 = OmronFinsDataType.AR;
                             break;
                         }
+                    case 'E':
+                    case 'e':
+                        {
+                            // E区，比较复杂，需要专门的计算
+                            string[] splits = address.Split( new char[] { '.' }, StringSplitOptions.RemoveEmptyEntries );
+                            int block = Convert.ToInt32( splits[0].Substring( 1 ), 16 );
+                            if (block < 16)
+                            {
+                                result.Content1 = new OmronFinsDataType( (byte)(0x20 + block), (byte)(0xA0 + block) );
+                            }
+                            else
+                            {
+                                result.Content1 = new OmronFinsDataType( (byte)(0xE0 + block - 16), (byte)(0x60 + block - 16) );
+                            }
+                            break;
+                        }
                     default: throw new Exception( StringResources.Language.NotSupportedDataType );
                 }
 
-                if (isBit)
+                if (address[0] == 'E' || address[0] == 'e')
                 {
-                    // 位操作
-                    string[] splits = address.Substring( 1 ).Split( new char[] { '.' }, StringSplitOptions.RemoveEmptyEntries );
-                    ushort addr = ushort.Parse( splits[0] );
-                    result.Content2 = new byte[3];
-                    result.Content2[0] = BitConverter.GetBytes( addr )[1];
-                    result.Content2[1] = BitConverter.GetBytes( addr )[0];
-
-                    if (splits.Length > 1)
+                    string[] splits = address.Split( new char[] { '.' }, StringSplitOptions.RemoveEmptyEntries );
+                    if (isBit)
                     {
-                        result.Content2[2] = byte.Parse( splits[1] );
-                        if (result.Content2[2] > 15)
+                        // 位操作
+                        ushort addr = ushort.Parse( splits[1] );
+                        result.Content2 = new byte[3];
+                        result.Content2[0] = BitConverter.GetBytes( addr )[1];
+                        result.Content2[1] = BitConverter.GetBytes( addr )[0];
+
+                        if (splits.Length > 2)
                         {
-                            throw new Exception( StringResources.Language.OmronAddressMustBeZeroToFiveteen );
+                            result.Content2[2] = byte.Parse( splits[2] );
+                            if (result.Content2[2] > 15)
+                            {
+                                throw new Exception( StringResources.Language.OmronAddressMustBeZeroToFiveteen );
+                            }
                         }
+                    }
+                    else
+                    {
+                        // 字操作
+                        ushort addr = ushort.Parse( splits[1] );
+                        result.Content2 = new byte[3];
+                        result.Content2[0] = BitConverter.GetBytes( addr )[1];
+                        result.Content2[1] = BitConverter.GetBytes( addr )[0];
                     }
                 }
                 else
                 {
-                    // 字操作
-                    ushort addr = ushort.Parse( address.Substring( 1 ) );
-                    result.Content2 = new byte[3];
-                    result.Content2[0] = BitConverter.GetBytes( addr )[1];
-                    result.Content2[1] = BitConverter.GetBytes( addr )[0];
+                    if (isBit)
+                    {
+                        // 位操作
+                        string[] splits = address.Substring( 1 ).Split( new char[] { '.' }, StringSplitOptions.RemoveEmptyEntries );
+                        ushort addr = ushort.Parse( splits[0] );
+                        result.Content2 = new byte[3];
+                        result.Content2[0] = BitConverter.GetBytes( addr )[1];
+                        result.Content2[1] = BitConverter.GetBytes( addr )[0];
+
+                        if (splits.Length > 1)
+                        {
+                            result.Content2[2] = byte.Parse( splits[1] );
+                            if (result.Content2[2] > 15)
+                            {
+                                throw new Exception( StringResources.Language.OmronAddressMustBeZeroToFiveteen );
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // 字操作
+                        ushort addr = ushort.Parse( address.Substring( 1 ) );
+                        result.Content2 = new byte[3];
+                        result.Content2[0] = BitConverter.GetBytes( addr )[1];
+                        result.Content2[1] = BitConverter.GetBytes( addr )[0];
+                    }
                 }
             }
             catch (Exception ex)
@@ -180,10 +229,9 @@ namespace HslCommunication.Profinet.Omron
         /// <returns>带有是否成功的结果对象</returns>
         public static OperateResult<byte[]> ResponseValidAnalysis( byte[] response, bool isRead )
         {
-            // 数据有效性分析
             if (response.Length >= 16)
             {
-                // 提取错误码
+                // 提取错误码 -> Extracting error Codes
                 byte[] buffer = new byte[4];
                 buffer[0] = response[15];
                 buffer[1] = response[14];
@@ -193,30 +241,71 @@ namespace HslCommunication.Profinet.Omron
                 int err = BitConverter.ToInt32( buffer, 0 );
                 if (err > 0) return new OperateResult<byte[]>( err, GetStatusDescription( err ) );
 
-                if (response.Length >= 30)
+                byte[] result = new byte[response.Length - 16];
+                Array.Copy( response, 16, result, 0, result.Length );
+                return UdpResponseValidAnalysis( result, isRead );
+                //if (response.Length >= 30)
+                //{
+                //    err = response[28] * 256 + response[29];
+                //    // if (err > 0) return new OperateResult<byte[]>( err, StringResources.Language.OmronReceiveDataError );
+
+                //    if (!isRead)
+                //    {
+                //        OperateResult<byte[]> success = OperateResult.CreateSuccessResult( new byte[0] );
+                //        success.ErrorCode = err;
+                //        success.Message = GetStatusDescription( err );
+                //        return success;
+                //    }
+                //    else
+                //    {
+                //        // 读取操作 -> read operate
+                //        byte[] content = new byte[response.Length - 30];
+                //        if (content.Length > 0) Array.Copy( response, 30, content, 0, content.Length );
+
+                //        OperateResult<byte[]> success = OperateResult.CreateSuccessResult( content );
+                //        if (content.Length == 0) success.IsSuccess = false;
+                //        success.ErrorCode = err;
+                //        success.Message = GetStatusDescription( err );
+                //        return success;
+                //    }
+                //}
+            }
+
+            return new OperateResult<byte[]>( StringResources.Language.OmronReceiveDataError );
+        }
+
+
+        /// <summary>
+        /// 验证欧姆龙的Fins-Udp返回的数据是否正确的数据，如果正确的话，并返回所有的数据内容
+        /// </summary>
+        /// <param name="response">来自欧姆龙返回的数据内容</param>
+        /// <param name="isRead">是否读取</param>
+        /// <returns>带有是否成功的结果对象</returns>
+        public static OperateResult<byte[]> UdpResponseValidAnalysis( byte[] response, bool isRead )
+        {
+            if (response.Length >= 14)
+            {
+                int err = response[12] * 256 + response[13];
+                // if (err > 0) return new OperateResult<byte[]>( err, StringResources.Language.OmronReceiveDataError );
+
+                if (!isRead)
                 {
-                    err = response[28] * 256 + response[29];
-                    // 暂时忽略所有的报警信息
-                    // if (err > 0) return new OperateResult<byte[]>( err, StringResources.Language.OmronReceiveDataError );
+                    OperateResult<byte[]> success = OperateResult.CreateSuccessResult( new byte[0] );
+                    success.ErrorCode = err;
+                    success.Message = GetStatusDescription( err ) + " Received:" + SoftBasic.ByteToHexString( response, ' ' );
+                    return success;
+                }
+                else
+                {
+                    // 读取操作 -> read operate
+                    byte[] content = new byte[response.Length - 14];
+                    if (content.Length > 0) Array.Copy( response, 14, content, 0, content.Length );
 
-                    if (!isRead)
-                    {
-                        OperateResult<byte[]> success = OperateResult.CreateSuccessResult( new byte[0] );
-                        success.ErrorCode = err;
-                        success.Message = GetStatusDescription( err );
-                        return success;
-                    }
-                    else
-                    {
-                        // 读取操作
-                        byte[] content = new byte[response.Length - 30];
-                        if (content.Length > 0) Array.Copy( response, 30, content, 0, content.Length );
-
-                        OperateResult<byte[]> success = OperateResult.CreateSuccessResult( content );
-                        success.ErrorCode = err;
-                        success.Message = GetStatusDescription( err );
-                        return success;
-                    }
+                    OperateResult<byte[]> success = OperateResult.CreateSuccessResult( content );
+                    if (content.Length == 0) success.IsSuccess = false;
+                    success.ErrorCode = err;
+                    success.Message = GetStatusDescription( err ) + " Received:" + SoftBasic.ByteToHexString( response, ' ' );
+                    return success;
                 }
             }
 
